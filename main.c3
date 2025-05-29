@@ -2,8 +2,7 @@ import std::io;
 import std::math;
 
 fn String string_from_cstr(char *cstr) {
-   DString builder;
-   builder.new_init();
+   DString builder = dstring::temp();
    for (usz i = 0; ;++i) {
        char c = cstr[i];
        if (c == '\0') {
@@ -28,11 +27,10 @@ const char[5] VOWELS = {'a', 'e', 'i', 'o', 'u'};
 const char[21] CONSONANTS = { 'b', 'c', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm', 'n', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'y', 'z' };
 
 fn String generate_word(uint min_syllables, uint max_syllables) {
-   DString builder;
-   builder.new_init();
+   DString builder = dstring::temp();
    int syllables_count = rand_in_range(min_syllables, max_syllables);
    for (usz i = 0; i < syllables_count; ++i) {
-       SyllableType t = (SyllableType) rand(SyllableType.len);
+       SyllableType t = (SyllableType).from_ordinal(rand(SyllableType.len));
        switch(t) {
            case CON_VOW:
                builder.append_char(CONSONANTS[rand(CONSONANTS.len)]);
@@ -74,7 +72,7 @@ macro shift_c_arr(argc, argv) {
 }
 
 fn uint to_uint_or(String x, uint def_val) {
-    uint! usr_v = x.to_uint();
+    uint? usr_v = x.to_uint();
     if (catch err = usr_v) {
        io::eprintfn("[ERROR] Couldn't parse string (%s) as a uint: %s", x, err);
        io::printfn("[INFO] Defaulting value to %d", def_val);
@@ -90,10 +88,10 @@ fn uint to_uint_or(String x, uint def_val) {
 
 fn void usage(String program_name) {
     io::printfn("Usage: %s [-c <number>]", program_name);
-    io::printfn("     -w <max-syllables>   ---  Generate <number> words", program_name);
-    io::printfn("     -s <max-syllables>   ---  Max number of \"syllables\" to use", program_name);
-    io::printfn("     -s <min>..<max>      ---  Range of min..max \"syllables\" to use", program_name);
-    io::printfn("     -h                   ---  Display this message", program_name);
+    io::printfn("     -w <max-syllables>   ---  Generate <number> words");
+    io::printfn("     -s <max-syllables>   ---  Max number of \"syllables\" to use");
+    io::printfn("     -s <min>..<max>      ---  Range of min..max \"syllables\" to use");
+    io::printfn("     -h                   ---  Display this message");
 }
 
 fn int main(int argc, char **argv) {
@@ -123,7 +121,7 @@ fn int main(int argc, char **argv) {
            }
            // Attempt to parse count
            String n = shift_c_arr(&argc, &argv);
-					 String[] range_str = n.split("..");
+           String[] range_str = n.tsplit("..");
 					 if (range_str.len == 0) {
                io::eprintn("Missing number argument for max syllables flag");
                usage(program_name);
